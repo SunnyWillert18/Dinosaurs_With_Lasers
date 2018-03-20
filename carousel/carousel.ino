@@ -23,7 +23,7 @@ int mode; // the carousel mode; defines how it is moving
 // LED instantiations
 
 // Interrupt instantiations
-volatile int lcdState = LOW; 
+volatile int mode_change = LOW; 
 
 
 void setup() {
@@ -58,10 +58,8 @@ void loop() {
   // TO DO: figure what each mode means and name them correctly
   x = analogRead(0);
   Serial.println(x);
-//  if (x = 1023) {
-//    mode = 0;
-//    output = "Carousel ready";
-//  }
+  output = "Carousel ready";
+
   if (x < 100) {
     // 'right' button
     output = "Mode 1";
@@ -115,7 +113,7 @@ void loop() {
     lcd.setCursor(0, 1);
     
     motor->setSpeed(5); // 5 rpm
-    motor->step(500, FORWARD,SINGLE);]
+    motor->step(500, FORWARD,SINGLE);
   }
   else if (mode == 3) {
     lcd.setCursor(0, 0);
@@ -133,6 +131,11 @@ void loop() {
     motor->setSpeed(20); // 20 rpm
     motor->step(500, FORWARD,SINGLE);
   }
+
+  // changing the mode back to 0 to stop from running the case
+  // TO DO: change to be more eloquent
+  mode = 0;
+  
 
 //  if (!lcdState) { //meaning lcd has not changed mode
 //    //read IMU data and keep stepper mode as is
