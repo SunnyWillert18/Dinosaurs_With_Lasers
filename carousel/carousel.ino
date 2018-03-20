@@ -3,6 +3,11 @@
 #include <Adafruit_MotorShield.h>
 #include <LiquidCrystal.h>
 
+// Power button instantiations
+int power_pin = 7;
+int power_button = 3; 
+volatile int power = LOW; // for power button interrupt
+
 // Stepper motor instantiations
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_StepperMotor*motor = AFMS.getStepper(200,2);
@@ -15,19 +20,27 @@ int16_t prev_deg = 0;
 int16_t threshold = 720;
 
 // LCD screen instantiations
-LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+int select_pin = 8, left_pin = 9, up_pin = 4, down_pin = 5, right_pin = 6, reset_pin = 7;
+LiquidCrystal lcd(select_pin, left_pin, up_pin, down_pin, right_pin, reset_pin);
 int x; //variable to store voltage value when a key is pressed
 String output = "";
-int mode; // the carousel mode; defines how it is moving
+int mode, mode_on = LOW; // the carousel mode; defines how it is moving
 
 // LED instantiations
-
-// Interrupt instantiations
-volatile int mode_change = LOW; 
-
+int pole_leds = 6;
 
 void setup() {
   Serial.begin(9600);
+
+  // LCD screen setup
+  lcd.begin(16, 2); // set up the LCD's number of columns (16) and rows (2):
+  pinMode(2, INPUT);
+
+  // Power button set up (and interrupt)
+  pinMode(power_button, INPUT);
+  pinMode(power_pin, OUTPUT);
+  attachInterrupt(digitalPinToInterrupt(power_button), power_check_ISR, RISING);
+  power = digitalRead(power_button);
 
   // Motor setup
   AFMS.begin(); //creating w default freq 1.6kHz
@@ -37,105 +50,105 @@ void setup() {
   Wire.beginTransmission(mpu);
   Wire.write(0x6B);
   Wire.endTransmission(true);
-
-  // LCD screen setup
-  lcd.begin(16, 2); // set up the LCD's number of columns (16) and rows (2):
-  pinMode(2, INPUT);
-
-  lcd.setCursor(0, 0);
-  lcd.print("Carousel ready");
-  lcd.setCursor(0, 1);
   
   // LED setup
-
-  // Interrupt setup
-  // TO DO: correctly setup interrupt
-//  attachInterrupt(digitalPinToInterrupt(interruptPin), lcd_change_ISR, CHANGE); 
+  pinMode(pole_leds, OUTPUT);
 }
-
-void loop() {
-  // Detect and display if button is pressed
-  // TO DO: figure what each mode means and name them correctly
-  x = analogRead(0);
-  Serial.println(x);
-  output = "Carousel ready";
-
-  if (x < 100) {
-    // 'right' button
-    output = "Mode 1";
-    mode = 1;
-  } 
-  else if (x < 200) {
-    // 'up' button
-    output = "Mode 2";
-    mode = 2;
-  } 
-  else if (x < 400) {
-    // 'down' button
-    output = "Mode 3"; 
-    mode = 3;
-  } 
-  else if (x < 600) {
-    // 'left' button
-    output = "Mode 4";
-    mode = 4;
-  } 
-  else if (x < 800) {
-    // 'select' button
-    output = "Select a mode";
-  }
-  else if (x < 1000) {
-    // 'reset' button
-    output = "Select a mode";
-  }
-
-  // writing information to lcd screen
-  lcd.setCursor(0, 0);
-  lcd.print(output);
-  lcd.setCursor(0, 1);
-
-  Serial.println(mode);
-
-  // alter stepper functioning based on what mode is pressed
-  // TO DO: decide what each mode will do (currently holds test stuff)
-  // TO DO: fix what the display is saying
-  if (mode == 1) {
-    lcd.setCursor(0, 0);
-    lcd.print("Mode 1 running");
-    lcd.setCursor(0, 1);
-    
-    motor->setSpeed(2); // 2 rpm
-    motor->step(500, FORWARD,SINGLE);
-  }
-  else if (mode == 2) {
-    lcd.setCursor(0, 0);
-    lcd.print("Mode 2 running");
-    lcd.setCursor(0, 1);
-    
-    motor->setSpeed(5); // 5 rpm
-    motor->step(500, FORWARD,SINGLE);
-  }
-  else if (mode == 3) {
-    lcd.setCursor(0, 0);
-    lcd.print("Mode 3 running");
-    lcd.setCursor(0, 1);
-    
-    motor->setSpeed(10); // 10 rpm
-    motor->step(500, FORWARD,SINGLE);
-  }
-  else if (mode == 4) {
-    lcd.setCursor(0, 0);
-    lcd.print("Mode 4 running");
-    lcd.setCursor(0, 1);
-    
-    motor->setSpeed(20); // 20 rpm
-    motor->step(500, FORWARD,SINGLE);
-  }
-
-  // changing the mode back to 0 to stop from running the case
-  // TO DO: change to be more eloquent
-  mode = 0;
   
+void loop() {
+  Serial.println(power);
+  
+  // check if system power is on for functioning
+  if (power == HIGH) {
+    // Detect and display if button is pressed
+    // TO DO: figure what each mode means and name them correctly
+    x = analogRead(0);
+    output = "Carousel Ready";
+    
+    if (x < 100) {
+      // 'right' button
+      output = "Mode 1";
+      mode = 1;
+      mode_on = HIGH;
+    } 
+    else if (x < 200) {
+      // 'up' button
+      output = "Mode 2";
+      mode = 2;
+      mode_on = HIGH;
+    } 
+    else if (x < 400) {
+      // 'down' button
+      output = "Mode 3"; 
+      mode = 3;
+      mode_on = HIGH;
+    } 
+    else if (x < 600) {
+      // 'left' button
+      output = "Mode 4";
+      mode = 4;
+      mode_on = HIGH;
+    } 
+  
+    // writing information to lcd screen
+    lcd.setCursor(0, 0);
+    lcd.print(output);
+    lcd.setCursor(0, 1);
+    
+    Serial.println(x);
+    Serial.println(mode);
+    digitalWrite(power_pin, power);
+    digitalWrite(pole_leds, mode_on);
+  
+    // alter stepper functioning based on what mode is pressed
+    // TO DO: decide what each mode will do (currently holds test stuff)
+    // TO DO: fix what the display is saying
+    // TO DO: fix stepper motor so lcd screen can run (drawing too much current) --> need a seperate power source
+    if (mode == 1) {
+      lcd.setCursor(0, 0);
+      lcd.print("Mode 1 running");
+      lcd.setCursor(0, 1);
+      
+  //    motor->setSpeed(2); // 2 rpm
+  //    motor->step(1000, FORWARD,SINGLE);
+    }
+    else if (mode == 2) {
+      lcd.setCursor(0, 0);
+      lcd.print("Mode 2 running");
+      lcd.setCursor(0, 1);
+      
+  //    motor->setSpeed(5); // 5 rpm
+  //    motor->step(1000, FORWARD,SINGLE);
+    }
+    else if (mode == 3) {
+      lcd.setCursor(0, 0);
+      lcd.print("Mode 3 running");
+      lcd.setCursor(0, 1);
+      
+  //    motor->setSpeed(10); // 10 rpm
+  //    motor->step(1000, FORWARD,SINGLE);
+    }
+    else if (mode == 4) {
+      lcd.setCursor(0, 0);
+      lcd.print("Mode 4 running");
+      lcd.setCursor(0, 1);
+      
+  //    motor->setSpeed(20); // 20 rpm
+  //    motor->step(1000, FORWARD,SINGLE);
+    }
+  
+    // changing the mode back to 0 to stop from running the case
+    // TO DO: change to be more eloquent
+    Serial.println(" ");
+    mode = 0;
+    mode_on = LOW;
+  }
+
+  else {
+    lcd.clear();
+  }
+  
+  //TO DO: turn LCD screen off (for an else statement)
 
 //  if (!lcdState) { //meaning lcd has not changed mode
 //    //read IMU data and keep stepper mode as is
@@ -169,9 +182,7 @@ void loop() {
 
 }
 
-// TO DO: correctly write interrupt code
-//void lcd_change_ISR()
-//{
-//  // sets lcdState as high when a button is changed
-//  lcdState = !lcdState;
-//}
+void power_check_ISR() {
+  power = !power;
+}
+
