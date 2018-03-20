@@ -41,6 +41,10 @@ void setup() {
   // LCD screen setup
   lcd.begin(16, 2); // set up the LCD's number of columns (16) and rows (2):
   pinMode(2, INPUT);
+
+  lcd.setCursor(0, 0);
+  lcd.print("Carousel ready");
+  lcd.setCursor(0, 1);
   
   // LED setup
 
@@ -53,33 +57,38 @@ void loop() {
   // Detect and display if button is pressed
   // TO DO: figure what each mode means and name them correctly
   x = analogRead(0);
+  Serial.println(x);
+//  if (x = 1023) {
+//    mode = 0;
+//    output = "Carousel ready";
+//  }
   if (x < 100) {
     // 'right' button
-    output = "mode 1 selected";
+    output = "Mode 1";
     mode = 1;
   } 
   else if (x < 200) {
     // 'up' button
-    output = "mode 2 selected";
+    output = "Mode 2";
     mode = 2;
   } 
   else if (x < 400) {
     // 'down' button
-    output = "mode 3 selected"; 
+    output = "Mode 3"; 
     mode = 3;
   } 
   else if (x < 600) {
     // 'left' button
-    output = "mode 4 selected";
+    output = "Mode 4";
     mode = 4;
   } 
   else if (x < 800) {
     // 'select' button
-    output = "please select another button";
+    output = "Select a mode";
   }
   else if (x < 1000) {
     // 'reset' button
-    output = "please select another button";
+    output = "Select a mode";
   }
 
   // writing information to lcd screen
@@ -87,31 +96,42 @@ void loop() {
   lcd.print(output);
   lcd.setCursor(0, 1);
 
-  // detect and display release event
-  // don't think this is necessary
-//  if (x == 1023) {
-//      lcd.print("Released: ");
-//      lcd.print(button);
-//  }
-//  delay(100);
+  Serial.println(mode);
 
   // alter stepper functioning based on what mode is pressed
   // TO DO: decide what each mode will do (currently holds test stuff)
-  if (mode = 1) {
+  // TO DO: fix what the display is saying
+  if (mode == 1) {
+    lcd.setCursor(0, 0);
+    lcd.print("Mode 1 running");
+    lcd.setCursor(0, 1);
+    
     motor->setSpeed(2); // 2 rpm
-    motor->step(1000, FORWARD,SINGLE);
+    motor->step(500, FORWARD,SINGLE);
   }
-  else if (mode = 2) {
+  else if (mode == 2) {
+    lcd.setCursor(0, 0);
+    lcd.print("Mode 2 running");
+    lcd.setCursor(0, 1);
+    
     motor->setSpeed(5); // 5 rpm
-    motor->step(1000, FORWARD,SINGLE);
+    motor->step(500, FORWARD,SINGLE);]
   }
-  else if (mode = 3) {
+  else if (mode == 3) {
+    lcd.setCursor(0, 0);
+    lcd.print("Mode 3 running");
+    lcd.setCursor(0, 1);
+    
     motor->setSpeed(10); // 10 rpm
-    motor->step(1000, FORWARD,SINGLE);
+    motor->step(500, FORWARD,SINGLE);
   }
-  else if (mode = 4) {
+  else if (mode == 4) {
+    lcd.setCursor(0, 0);
+    lcd.print("Mode 4 running");
+    lcd.setCursor(0, 1);
+    
     motor->setSpeed(20); // 20 rpm
-    motor->step(1000, FORWARD,SINGLE);
+    motor->step(500, FORWARD,SINGLE);
   }
 
 //  if (!lcdState) { //meaning lcd has not changed mode
