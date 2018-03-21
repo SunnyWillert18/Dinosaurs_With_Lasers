@@ -49,7 +49,7 @@ void loop() {
     // Detect and display if button is pressed
     // TO DO: figure what each mode means and name them correctly
     x = analogRead(0);
-    output = "Carousel Ready";
+    output = "Carousel Ready  ";
     
     if (x < 100) {
       // 'right' button
@@ -78,7 +78,7 @@ void loop() {
   
     // writing information to lcd screen
     lcd.setCursor(0, 0);
-    lcd.print(output);
+    lcd.print(output + "  ");
     lcd.setCursor(0, 1);
     
     Serial.println(x);
