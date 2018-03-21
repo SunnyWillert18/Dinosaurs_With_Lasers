@@ -10,6 +10,12 @@ volatile int power = LOW; // for power button interrupt
 
 // LED instantiations
 int pole_leds = 12;
+int blue_leds = 3;
+int green_leds = 13;
+int blue_leds_state = LOW;
+int green_leds_state = LOW;
+unsigned long previousMillis = 0; // Last time millis is instantiated
+volatile long interval = 500; // Variable interval between LED lights blinking 
 
 // Stepper motor instantiations
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
@@ -36,6 +42,8 @@ void setup() {
 
   // LED setup
   pinMode(pole_leds, OUTPUT);
+  pinMode(blue_leds, OUTPUT);
+  pinMode(green_leds, OUTPUT);
 
   // Motor setup
   AFMS.begin(); //creating w default freq 1.6kHz
@@ -86,6 +94,15 @@ void loop() {
     Serial.println();
     digitalWrite(power_out, power);
     digitalWrite(pole_leds, mode_on);
+      unsigned long currentMillis = millis();
+    
+    if (currentMillis - previousMillis >= interval) {
+      previousMillis = currentMillis;
+      green_leds_state = blue_leds_state;
+      blue_leds_state = !blue_leds_state;
+      digitalWrite(green_leds, green_leds_state);
+      digitalWrite(blue_leds, blue_leds_state);
+    }
   
     // alter stepper functioning based on what mode is pressed
     // TO DO: decide what each mode will do (currently holds test stuff)
@@ -129,6 +146,8 @@ void loop() {
     Serial.println(" ");
     mode = 0;
     mode_on = LOW;
+    digitalWrite(green_leds, LOW);
+    digitalWrite(blue_leds, LOW);
   }
 }
 
