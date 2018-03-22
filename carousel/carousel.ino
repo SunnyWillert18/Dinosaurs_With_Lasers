@@ -15,11 +15,11 @@ int green_leds = 13;
 int blue_leds_state = LOW;
 int green_leds_state = LOW;
 unsigned long previousMillis = 0; // Last time millis is instantiated
-volatile long interval = 500; // Variable interval between LED lights blinking 
 
 // Stepper motor instantiations
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_StepperMotor*motor = AFMS.getStepper(200,2);
+int motor_dir = 1; // initial direction of motor is forwards
 
 // LCD screen instantiations
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -47,11 +47,11 @@ void setup() {
 
   // Motor setup
   AFMS.begin(); //creating w default freq 1.6kHz
+  TWBR = ((F_CPU /400000l) - 16) / 2; 
 }
   
 void loop() {
   Serial.println(power);
-  
   // check if system power is on for functioning
   if (power) {
     // Detect and display if button is pressed
@@ -94,16 +94,8 @@ void loop() {
     Serial.println();
     digitalWrite(power_out, power);
     digitalWrite(pole_leds, mode_on);
-      unsigned long currentMillis = millis();
-    
-    if (currentMillis - previousMillis >= interval) {
-      previousMillis = currentMillis;
-      green_leds_state = blue_leds_state;
-      blue_leds_state = !blue_leds_state;
-      digitalWrite(green_leds, green_leds_state);
-      digitalWrite(blue_leds, blue_leds_state);
-    }
-  
+     
+    motor_dir = !motor_dir;
     // alter stepper functioning based on what mode is pressed
     // TO DO: decide what each mode will do (currently holds test stuff)
     // TO DO: fix what the display is saying
@@ -112,6 +104,14 @@ void loop() {
       lcd.setCursor(0, 0);
       lcd.print("Mode 1 running");
       lcd.setCursor(0, 1);
+      
+      top_led_blink(500);
+      
+      motor->setSpeed(1); // 2 rpm
+      motor->step(100, BACKWARD ,SINGLE);
+      motor->step(100, FORWARD ,SINGLE);  
+      motor->step(100, BACKWARD ,SINGLE);
+      motor->step(100, FORWARD ,SINGLE);  
 //      
 //      motor->setSpeed(1); // 2 rpm
 //      motor->step(1000, FORWARD,SINGLE);
@@ -120,6 +120,12 @@ void loop() {
       lcd.setCursor(0, 0);
       lcd.print("Mode 2 running");
       lcd.setCursor(0, 1);
+      
+      top_led_blink(1000);
+      
+      motor->setSpeed(1); 
+      motor->step(100, BACKWARD ,SINGLE);
+      motor->step(100, FORWARD ,SINGLE);  
 //      
 //      motor->setSpeed(1); // 2 rpm
 //      motor->step(1000, FORWARD,SINGLE);
@@ -129,6 +135,15 @@ void loop() {
       lcd.print("Mode 3 running");
       lcd.setCursor(0, 1);
       
+      top_led_blink(50);
+      
+      motor->setSpeed(1); 
+      motor->step(50, BACKWARD ,SINGLE);
+      motor->step(50, FORWARD ,SINGLE);  
+      motor->step(50, BACKWARD ,SINGLE);
+      motor->step(50, FORWARD ,SINGLE);
+      motor->step(50, BACKWARD ,SINGLE);
+      motor->step(50, FORWARD ,SINGLE);        
 //      motor->setSpeed(1); // 2 rpm
 //      motor->step(1000, FORWARD,SINGLE);
     }
@@ -137,6 +152,10 @@ void loop() {
       lcd.print("Mode 4 running");
       lcd.setCursor(0, 1);
       
+      top_led_blink(100);
+      
+      motor->setSpeed(1); 
+      motor->step(1000, motor_dir ,SINGLE);
 //      motor->setSpeed(1); // 2 rpm
 //      motor->step(1000, FORWARD,SINGLE);
     }
@@ -155,3 +174,13 @@ void power_check_ISR() {
   power = !power;
 }
 
+void top_led_blink(int interval) {
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    green_leds_state = blue_leds_state;
+    blue_leds_state = !blue_leds_state;
+    digitalWrite(green_leds, green_leds_state);
+    digitalWrite(blue_leds, blue_leds_state);
+  }
+}
