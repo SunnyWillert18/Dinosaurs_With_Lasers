@@ -12,8 +12,9 @@ volatile int power = LOW; // for power button interrupt
 int pole_leds = 12;
 int blue_leds = 3;
 int green_leds = 13;
-int blue_leds_state = LOW;
-int green_leds_state = LOW;
+//int blue_leds_state = LOW;
+//int green_leds_state = LOW;
+int top_leds_state = LOW;
 unsigned long previousMillis = 0; // Last time millis is instantiated
 
 // Stepper motor instantiations
@@ -92,41 +93,90 @@ void loop() {
     digitalWrite(power_out, power);
     digitalWrite(pole_leds, mode_on);
      
-    motor_dir = !motor_dir;
+    motor_dir = !motor_dir; // to avoid rotating too far in one direction 
     // alter stepper functioning based on what mode is pressed
     if (mode == 1) {
-      top_led_blink(20);
-
       motor->setSpeed(0.5);
+      digitalWrite(blue_leds, HIGH);
+      digitalWrite(green_leds, HIGH);
       motor->step(300, motor_dir, SINGLE);
     }
-    else if (mode == 2) {      
-      top_led_blink(15);
-
+    else if (mode == 2) {  
       motor->setSpeed(0.75);
+      digitalWrite(blue_leds, top_leds_state);
+      digitalWrite(green_leds, !top_leds_state);
+      
       motor->step(100, BACKWARD, SINGLE);
-      motor->step(100, FORWARD, SINGLE);  
+      digitalWrite(blue_leds, !top_leds_state);
+      digitalWrite(green_leds, top_leds_state);   
+       
+      motor->step(100, FORWARD, SINGLE);
+      digitalWrite(blue_leds, top_leds_state);
+      digitalWrite(green_leds, !top_leds_state);
+       
       motor->step(100, BACKWARD, SINGLE);
+      digitalWrite(blue_leds, !top_leds_state);
+      digitalWrite(green_leds, top_leds_state);
     }
     else if (mode == 3) {  
-      top_led_blink(10);
+      digitalWrite(blue_leds, !top_leds_state);
+      digitalWrite(green_leds, top_leds_state);
+      
+      motor->step(50, BACKWARD, SINGLE);
+      digitalWrite(blue_leds, top_leds_state);
+      digitalWrite(green_leds, !top_leds_state);   
+       
+      motor->step(50, FORWARD, SINGLE);
+      digitalWrite(blue_leds, !top_leds_state);
+      digitalWrite(green_leds, top_leds_state);
+       
+      motor->step(50, BACKWARD, SINGLE);
+      digitalWrite(blue_leds, top_leds_state);
+      digitalWrite(green_leds, !top_leds_state);
+
+      motor->step(50, FORWARD, SINGLE);
+      digitalWrite(blue_leds, !top_leds_state);
+      digitalWrite(green_leds, top_leds_state);
 
       motor->step(50, BACKWARD, SINGLE);
-      motor->step(50, FORWARD, SINGLE); 
-      motor->step(50, BACKWARD, SINGLE);
-      motor->step(50, FORWARD, SINGLE);   
+      digitalWrite(blue_leds, top_leds_state);
+      digitalWrite(green_leds, !top_leds_state);
     }
     else if (mode == 4) {
-      top_led_blink(5);
+      digitalWrite(blue_leds, !top_leds_state);
+      digitalWrite(green_leds, top_leds_state);
+      
+      motor->step(25, BACKWARD, SINGLE);
+      digitalWrite(blue_leds, top_leds_state);
+      digitalWrite(green_leds, !top_leds_state);   
+       
+      motor->step(25, FORWARD, SINGLE);
+      digitalWrite(blue_leds, !top_leds_state);
+      digitalWrite(green_leds, top_leds_state);
+       
+      motor->step(25, BACKWARD, SINGLE);
+      digitalWrite(blue_leds, top_leds_state);
+      digitalWrite(green_leds, !top_leds_state);
+
+      motor->step(25, FORWARD, SINGLE);
+      digitalWrite(blue_leds, !top_leds_state);
+      digitalWrite(green_leds, top_leds_state);
 
       motor->step(25, BACKWARD, SINGLE);
-      motor->step(25, FORWARD, SINGLE); 
-      motor->step(25, BACKWARD, SINGLE);
+      digitalWrite(blue_leds, top_leds_state);
+      digitalWrite(green_leds, !top_leds_state);   
+       
       motor->step(25, FORWARD, SINGLE);
+      digitalWrite(blue_leds, !top_leds_state);
+      digitalWrite(green_leds, top_leds_state);
+       
       motor->step(25, BACKWARD, SINGLE);
-      motor->step(25, FORWARD, SINGLE); 
-      motor->step(25, BACKWARD, SINGLE);
-      motor->step(25, FORWARD, SINGLE); 
+      digitalWrite(blue_leds, top_leds_state);
+      digitalWrite(green_leds, !top_leds_state);
+
+      motor->step(25, FORWARD, SINGLE);
+      digitalWrite(blue_leds, !top_leds_state);
+      digitalWrite(green_leds, top_leds_state); 
     }
   
     // changing the mode back to 0 to stop from running the case
@@ -144,15 +194,4 @@ void loop() {
 
 void power_check_ISR() {
   power = !power;
-}
-
-void top_led_blink(int interval) {
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis;
-    green_leds_state = blue_leds_state;
-    blue_leds_state = !blue_leds_state;
-    digitalWrite(green_leds, green_leds_state);
-    digitalWrite(blue_leds, blue_leds_state);
-  }
 }
