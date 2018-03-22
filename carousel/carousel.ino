@@ -7,15 +7,14 @@
 int power_out = 11;
 int power_button = 2; 
 volatile int power = LOW; // for power button interrupt
+int power_led = LOW;
 
 // LED instantiations
 int pole_leds = 12;
 int blue_leds = 3;
 int green_leds = 13;
-//int blue_leds_state = LOW;
-//int green_leds_state = LOW;
 int top_leds_state = LOW;
-unsigned long previousMillis = 0; // Last time millis is instantiated
+unsigned long current_ms, previous_ms = 0, interval = 100; // Last time millis is instantiated
 
 // Stepper motor instantiations
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
@@ -57,6 +56,13 @@ void loop() {
     // Detect and display if button is pressed
     x = analogRead(0);
     output = "Carousel Ready  ";
+
+    current_ms = millis();
+    if (current_ms - previous_ms >= interval) {
+      previous_ms = current_ms;
+      digitalWrite(power_out, power_led);
+      power_led = !power_led;
+    }
     
     if (x < 100) {
       // 'right' button
@@ -87,10 +93,7 @@ void loop() {
     lcd.setCursor(0, 0);
     lcd.print(output + "  ");
     lcd.setCursor(0, 1);
-    
-    Serial.println(mode);
-    Serial.println();
-    digitalWrite(power_out, power);
+
     digitalWrite(pole_leds, mode_on);
      
     motor_dir = !motor_dir; // to avoid rotating too far in one direction 
