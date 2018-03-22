@@ -32,8 +32,6 @@ void setup() {
 
   // LCD screen setup
   lcd.begin(16, 2); // set up the LCD's number of columns (16) and rows (2):
-  lcd.setCursor(0,0);
-  lcd.print("Push the buttons");
 
   // Power button set up (and interrupt)
   pinMode(power_button, INPUT);
@@ -48,6 +46,7 @@ void setup() {
   // Motor setup
   AFMS.begin(); //creating w default freq 1.6kHz
   TWBR = ((F_CPU /400000l) - 16) / 2; 
+  motor->setSpeed(1);
 }
   
 void loop() {
@@ -55,31 +54,30 @@ void loop() {
   // check if system power is on for functioning
   if (power) {
     // Detect and display if button is pressed
-    // TO DO: figure what each mode means and name them correctly
     x = analogRead(0);
     output = "Carousel Ready  ";
     
     if (x < 100) {
       // 'right' button
-      output = "Mode 1";
+      output = "Childs Play     ";
       mode = 1;
       mode_on = HIGH;
     } 
     else if (x < 200) {
       // 'up' button
-      output = "Mode 2";
+      output = "Just Chillin'  ";
       mode = 2;
       mode_on = HIGH;
     } 
     else if (x < 400) {
       // 'down' button
-      output = "Mode 3"; 
+      output = "Rager           "; 
       mode = 3;
       mode_on = HIGH;
     } 
     else if (x < 600) {
       // 'left' button
-      output = "Mode 4";
+      output = "VomCom          ";
       mode = 4;
       mode_on = HIGH;
     } 
@@ -89,7 +87,6 @@ void loop() {
     lcd.print(output + "  ");
     lcd.setCursor(0, 1);
     
-    Serial.println(x);
     Serial.println(mode);
     Serial.println();
     digitalWrite(power_out, power);
@@ -97,76 +94,51 @@ void loop() {
      
     motor_dir = !motor_dir;
     // alter stepper functioning based on what mode is pressed
-    // TO DO: decide what each mode will do (currently holds test stuff)
-    // TO DO: fix what the display is saying
-    // TO DO: fix stepper motor so lcd screen can run (drawing too much current) --> need a seperate power source
     if (mode == 1) {
-      lcd.setCursor(0, 0);
-      lcd.print("Mode 1 running");
-      lcd.setCursor(0, 1);
-      
-      top_led_blink(500);
-      
-      motor->setSpeed(1); // 2 rpm
-      motor->step(100, BACKWARD ,SINGLE);
-      motor->step(100, FORWARD ,SINGLE);  
-      motor->step(100, BACKWARD ,SINGLE);
-      motor->step(100, FORWARD ,SINGLE);  
-//      
-//      motor->setSpeed(1); // 2 rpm
-//      motor->step(1000, FORWARD,SINGLE);
+      top_led_blink(20);
+
+      motor->setSpeed(0.5);
+      motor->step(300, motor_dir, SINGLE);
     }
-    else if (mode == 2) {
-      lcd.setCursor(0, 0);
-      lcd.print("Mode 2 running");
-      lcd.setCursor(0, 1);
-      
-      top_led_blink(1000);
-      
-      motor->setSpeed(1); 
-      motor->step(100, BACKWARD ,SINGLE);
-      motor->step(100, FORWARD ,SINGLE);  
-//      
-//      motor->setSpeed(1); // 2 rpm
-//      motor->step(1000, FORWARD,SINGLE);
+    else if (mode == 2) {      
+      top_led_blink(15);
+
+      motor->setSpeed(0.75);
+      motor->step(100, BACKWARD, SINGLE);
+      motor->step(100, FORWARD, SINGLE);  
+      motor->step(100, BACKWARD, SINGLE);
     }
-    else if (mode == 3) {
-      lcd.setCursor(0, 0);
-      lcd.print("Mode 3 running");
-      lcd.setCursor(0, 1);
-      
-      top_led_blink(50);
-      
-      motor->setSpeed(1); 
-      motor->step(50, BACKWARD ,SINGLE);
-      motor->step(50, FORWARD ,SINGLE);  
-      motor->step(50, BACKWARD ,SINGLE);
-      motor->step(50, FORWARD ,SINGLE);
-      motor->step(50, BACKWARD ,SINGLE);
-      motor->step(50, FORWARD ,SINGLE);        
-//      motor->setSpeed(1); // 2 rpm
-//      motor->step(1000, FORWARD,SINGLE);
+    else if (mode == 3) {  
+      top_led_blink(10);
+
+      motor->step(50, BACKWARD, SINGLE);
+      motor->step(50, FORWARD, SINGLE); 
+      motor->step(50, BACKWARD, SINGLE);
+      motor->step(50, FORWARD, SINGLE);   
     }
     else if (mode == 4) {
-      lcd.setCursor(0, 0);
-      lcd.print("Mode 4 running");
-      lcd.setCursor(0, 1);
-      
-      top_led_blink(100);
-      
-      motor->setSpeed(1); 
-      motor->step(1000, motor_dir ,SINGLE);
-//      motor->setSpeed(1); // 2 rpm
-//      motor->step(1000, FORWARD,SINGLE);
+      top_led_blink(5);
+
+      motor->step(25, BACKWARD, SINGLE);
+      motor->step(25, FORWARD, SINGLE); 
+      motor->step(25, BACKWARD, SINGLE);
+      motor->step(25, FORWARD, SINGLE);
+      motor->step(25, BACKWARD, SINGLE);
+      motor->step(25, FORWARD, SINGLE); 
+      motor->step(25, BACKWARD, SINGLE);
+      motor->step(25, FORWARD, SINGLE); 
     }
   
     // changing the mode back to 0 to stop from running the case
-    // TO DO: change to be more eloquent
-    Serial.println(" ");
     mode = 0;
     mode_on = LOW;
     digitalWrite(green_leds, LOW);
     digitalWrite(blue_leds, LOW);
+  }
+
+  else {
+    lcd.setCursor(0,0);
+    lcd.print("Turn Power On   ");
   }
 }
 
