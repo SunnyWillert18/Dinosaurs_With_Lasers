@@ -19,7 +19,7 @@ unsigned long current_ms, previous_ms = 0, interval = 100; // Last time millis i
 // Stepper motor instantiations
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_StepperMotor*motor = AFMS.getStepper(200,2);
-int motor_dir = 1; // initial direction of motor is forwards
+int dir_change = LOW; // setting direction change variable
 
 // LCD screen instantiations
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -96,13 +96,19 @@ void loop() {
 
     digitalWrite(pole_leds, mode_on);
      
-    motor_dir = !motor_dir; // to avoid rotating too far in one direction 
     // alter stepper functioning based on what mode is pressed
     if (mode == 1) {
       motor->setSpeed(0.5);
       digitalWrite(blue_leds, HIGH);
       digitalWrite(green_leds, HIGH);
-      motor->step(300, motor_dir, SINGLE);
+
+      if (dir_change) {
+        motor->step(300, FORWARD, SINGLE);
+      }
+      else {
+        motor->step(300, BACKWARD, SINGLE);
+      }
+      dir_change = !dir_change;
     }
     else if (mode == 2) {  
       motor->setSpeed(0.75);
